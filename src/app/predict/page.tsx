@@ -1,42 +1,21 @@
-"use client"
+'use client'
 
-import React, { useState } from 'react';
-import Chart from './chart';
+import { LineChart } from "./chart/LineChart";
 
-const Page = () => {
-  const [dataPoint, setDataPoint] = useState<{ time: number; probability: number }>({
-    time: 30,
-    probability: 0.7,
-  });
-
-  const [dataPoints, setDataPoints] = useState<{ time: number; probability: number }[]>([
-    dataPoint,
-  ]);
-
-  const addDataPoint = () => {
-    // Create a new dummy value
-    const newTime = dataPoints.length * 10 + 30; // Increment time
-    const newWinProb = Math.random(); // Random probability between 0 and 1
-
-    // Update the state with the new data point
-    setDataPoints((prev) => [...prev, { time: newTime, probability: newWinProb }]);
-    setDataPoint({ time: newTime, probability: newWinProb }); // Update the displayed point
-  };
-
+/*
+const Page: React.FC = () => {
   return (
-    <div>
-      <h1>Win Probability Chart</h1>
-      <Chart winProb={dataPoint.probability} time={dataPoint.time} />
-      <button onClick={addDataPoint}>Add Dummy Data Point</button>
-      <ul>
-        {dataPoints.map((point, index) => (
-          <li key={index}>
-            Time: {point.time}s, Probability: {point.probability.toFixed(2)}
-          </li>
-        ))}
-      </ul>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Win Probability Tracker</h1>
+      <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden">
+        <div className="p-6">
+          <LineChart data={[{x: 50, y: 100}, {x: 55, y: 200}, {x: 54, y: 300}]} width={400} height={400}></LineChart>
+        </div>
+      </div>
     </div>
   );
-};
+}; */
 
-export default Page;
+ export default function Predict() {
+  return(<LineChart data={[{x: 50, y: 100}, {x: 55, y: 200}, {x: 54, y: 300}]} width={400} height={400}></LineChart>)
+ }
