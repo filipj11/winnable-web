@@ -15,8 +15,8 @@ type LineChartProps = {
 }
 
 export const LineChart = ({ width, height, data }: LineChartProps) => {
-    const boundsWidth = MARGIN.right - MARGIN.left;
-    const boundsHeight = MARGIN.top - MARGIN.bottom;
+    const boundsWidth = width - MARGIN.right - MARGIN.left;
+    const boundsHeight = height - MARGIN.top - MARGIN.bottom;
 
     const [hovered, setHovered] = useState<InteractionInfo | null>(null);
 
@@ -38,7 +38,7 @@ export const LineChart = ({ width, height, data }: LineChartProps) => {
                     setHovered({
                         xPos: xScale(d.x),
                         yPos: yScale(d.y),
-                        text: `Win probability: ${d.x}` 
+                        text: `Win probability: ${d.x}`,
                     })
                 }
                 onMouseLeave={() =>
@@ -48,6 +48,15 @@ export const LineChart = ({ width, height, data }: LineChartProps) => {
         );
     });
 
+    const lineBuilder = d3.line<{x: number, y: number}>()
+                          .x((d) => xScale(d.x))
+                          .y((d) => yScale(d.y));
+    
+    const linePath = lineBuilder(data)
+    if (!linePath) {
+        return null;
+    }
+
     return (
         <div style={{ position: "relative" }}>
             <svg width={width} height={height}>
@@ -56,6 +65,13 @@ export const LineChart = ({ width, height, data }: LineChartProps) => {
                     height={boundsHeight}
                     transform={`translate(${[MARGIN.left, MARGIN.top].join(",")})`}
                 >
+                    <path
+                        d={linePath}
+                        opacity={1}
+                        stroke="#cd1dd1"
+                        fill="none"
+                        strokeWidth={2}
+                    />
                     <AxisLeft yScale={yScale} pixelsPerTick={40} width={boundsWidth}/>
                     <g transform={`translate(0, ${boundsHeight})`}>
                         <AxisBottom

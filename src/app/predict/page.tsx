@@ -17,5 +17,5 @@ const Page: React.FC = () => {
 }; */
 
  export default function Predict() {
-  return(<LineChart data={[{x: 50, y: 100}, {x: 55, y: 200}, {x: 54, y: 300}]} width={400} height={400}></LineChart>)
+  return(<LineChart data={[{x: 50, y: 50}, {x: 1000, y: 60}, {x: 4000, y: 40}]} width={400} height={400}></LineChart>)
  }
