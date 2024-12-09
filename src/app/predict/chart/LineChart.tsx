@@ -3,44 +3,27 @@
 import * as d3 from "d3";
 import { AxisLeft } from "./AxisLeft";
 import { AxisBottom } from "./AxisBottom";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { InteractionInfo, Tooltip } from "./Tooltip";
 
-export interface ChartDimensions {
-    width?: number;
-    height?: number;
-    marginTop?: number;
-    marginRight?: number;
-    marginBottom?: number;
-    marginLeft?: number;
-    boundedHeight?: number;
-    boundedWidth?: number;
-}
+const MARGIN = { top: 60, right: 60, bottom: 60, left: 60 };
 
 type LineChartProps = {
-    data: {x: number, y: number}[],
-    dims: ChartDimensions
+    width: number;
+    height: number;
+    data: {x: number, y: number}[];
 }
 
-export const LineChart = ({ data, dims }: LineChartProps) => {
+export const LineChart = ({ width, height, data }: LineChartProps) => {
+    const boundsWidth = width - MARGIN.right - MARGIN.left;
+    const boundsHeight = height - MARGIN.top - MARGIN.bottom;
+
     const [hovered, setHovered] = useState<InteractionInfo | null>(null);
 
-    const xScale = useMemo(() => (
-        d3.scaleLinear()
-        .domain([0, 100000])
-        .range([0, dims.boundedWidth ?? 100])
-    ), [dims.boundedWidth])
-
-    const yScale = useMemo(() => (
-        d3.scaleLinear()
-        .domain([0, 100])
-        .range([dims.boundedHeight ?? 100, 0])
-    ), [dims.boundedHeight])
+    const yScale = d3.scaleLinear().domain([0, 100]).range([boundsHeight, 0]);
+    const xScale = d3.scaleLinear().domain([0, 10000]).range([0, boundsWidth]);
 
     const shapes = data.map((d, i) => {
-        const xPos = xScale(d.x);
-        const yPos = yScale(d.y);
-        console.log(`Circle ${i}: xPos=${xPos}, yPos=${yPos}`);
         return (
             <circle
                 key={i}
@@ -67,7 +50,7 @@ export const LineChart = ({ data, dims }: LineChartProps) => {
 
     const lineBuilder = d3.line<{x: number, y: number}>()
                           .x((d) => xScale(d.x))
-                          .y((d) => yScale(d.y))
+                          .y((d) => yScale(d.y));
     
     const linePath = lineBuilder(data)
     if (!linePath) {
@@ -76,25 +59,25 @@ export const LineChart = ({ data, dims }: LineChartProps) => {
 
     return (
         <div style={{ position: "relative" }}>
-            <svg width={dims.width} height={dims.height}>
+            <svg width={width} height={height}>
                 <g
-                    width={dims.boundedWidth}
-                    height={dims.boundedHeight}
-                    transform={`translate(${[dims.marginLeft, dims.marginTop].join(",")})`}
+                    width={boundsWidth}
+                    height={boundsHeight}
+                    transform={`translate(${[MARGIN.left, MARGIN.top].join(",")})`}
                 >
                     <path
                         d={linePath}
                         opacity={1}
-                        stroke="#1e90ff"
+                        stroke="#cd1dd1"
                         fill="none"
-                        strokeWidth={4}
+                        strokeWidth={2}
                     />
-                    <AxisLeft yScale={yScale} pixelsPerTick={40} width={dims.boundedWidth ?? 0}/>
-                    <g transform={`translate(0, ${dims.boundedHeight})`}>
+                    <AxisLeft yScale={yScale} pixelsPerTick={40} width={boundsWidth}/>
+                    <g transform={`translate(0, ${boundsHeight})`}>
                         <AxisBottom
                             xScale={xScale}
                             pixelsPerTick={40}
-                            height={dims.boundedHeight ?? 0}
+                            height={boundsHeight}
                         />
                     </g>
                     {shapes}
@@ -102,14 +85,14 @@ export const LineChart = ({ data, dims }: LineChartProps) => {
             </svg>
             <div
                 style={{
-                    width: dims.boundedWidth,
-                    height: dims.boundedHeight,
+                    width: boundsWidth,
+                    height: boundsHeight,
                     position: "absolute",
                     top: 0,
                     left: 0,
                     pointerEvents: "none",
-                    marginLeft: dims.marginLeft,
-                    marginTop: dims.marginTop,
+                    marginLeft: MARGIN.left,
+                    marginTop: MARGIN.top,
                 }}
             >
                 <Tooltip interactionInfo={hovered} />
