@@ -1,102 +1,119 @@
-'use client'
+'use client';
 
 import * as d3 from "d3";
-import { AxisLeft } from "./AxisLeft";
+import { useMemo, useState } from "react";
 import { AxisBottom } from "./AxisBottom";
-import { useState } from "react";
+import { AxisLeft } from "./AxisLeft";
 import { InteractionInfo, Tooltip } from "./Tooltip";
 
-const MARGIN = { top: 60, right: 60, bottom: 60, left: 60 };
-
-type LineChartProps = {
-    width: number;
-    height: number;
-    data: {x: number, y: number}[];
+export interface ChartDimensions {
+	width?: number;
+	height?: number;
+	marginTop?: number;
+	marginRight?: number;
+	marginBottom?: number;
+	marginLeft?: number;
+	boundedHeight?: number;
+	boundedWidth?: number;
 }
 
-export const LineChart = ({ width, height, data }: LineChartProps) => {
-    const boundsWidth = width - MARGIN.right - MARGIN.left;
-    const boundsHeight = height - MARGIN.top - MARGIN.bottom;
+type LineChartProps = {
+	data: { x: number, y: number; }[],
+	dims: ChartDimensions;
+};
 
-    const [hovered, setHovered] = useState<InteractionInfo | null>(null);
+export const LineChart = ({ data, dims }: LineChartProps) => {
+	const [hovered, setHovered] = useState<InteractionInfo | null>(null);
 
-    const yScale = d3.scaleLinear().domain([0, 100]).range([boundsHeight, 0]);
-    const xScale = d3.scaleLinear().domain([0, 10000]).range([0, boundsWidth]);
+	const xScale = useMemo(() => (
+		d3.scaleLinear()
+			.domain([0, 100000])
+			.range([0, dims.boundedWidth ?? 100])
+	), [dims.boundedWidth]);
 
-    const shapes = data.map((d, i) => {
-        return (
-            <circle
-                key={i}
-                r={8}
-                cx={xScale(d.x)}
-                cy={yScale(d.y)}
-                stroke="#cd1dd1"
-                fill="#cd1dd1"
-                fillOpacity={0.2}
-                strokeWidth={1}
-                onMouseEnter={() =>
-                    setHovered({
-                        xPos: xScale(d.x),
-                        yPos: yScale(d.y),
-                        text: `Win probability: ${d.x}`,
-                    })
-                }
-                onMouseLeave={() =>
-                    setHovered(null)
-                }
-            />
-        );
-    });
+	const yScale = useMemo(() => (
+		d3.scaleLinear()
+			.domain([0, 100])
+			.range([dims.boundedHeight ?? 100, 0])
+	), [dims.boundedHeight]);
 
-    const lineBuilder = d3.line<{x: number, y: number}>()
-                          .x((d) => xScale(d.x))
-                          .y((d) => yScale(d.y));
-    
-    const linePath = lineBuilder(data)
-    if (!linePath) {
-        return null;
-    }
+	const shapes = data.map((d, i) => {
+		const xPos = xScale(d.x);
+		const yPos = yScale(d.y);
+		console.log(`Circle ${i}: xPos=${xPos}, yPos=${yPos}`);
+		return (
+			<circle
+				key={i}
+				r={8}
+				cx={xScale(d.x)}
+				cy={yScale(d.y)}
+				stroke="#cd1dd1"
+				fill="#cd1dd1"
+				fillOpacity={0.2}
+				strokeWidth={1}
+				onMouseEnter={() =>
+					setHovered({
+						xPos: xScale(d.x),
+						yPos: yScale(d.y),
+						text: `Win probability: ${d.x}`,
+					})
+				}
+				onMouseLeave={() =>
+					setHovered(null)
+				}
+			/>
+		);
+	});
 
-    return (
-        <div style={{ position: "relative" }}>
-            <svg width={width} height={height}>
-                <g
-                    width={boundsWidth}
-                    height={boundsHeight}
-                    transform={`translate(${[MARGIN.left, MARGIN.top].join(",")})`}
-                >
-                    <path
-                        d={linePath}
-                        opacity={1}
-                        stroke="#cd1dd1"
-                        fill="none"
-                        strokeWidth={2}
-                    />
-                    <AxisLeft yScale={yScale} pixelsPerTick={40} width={boundsWidth}/>
-                    <g transform={`translate(0, ${boundsHeight})`}>
-                        <AxisBottom
-                            xScale={xScale}
-                            pixelsPerTick={40}
-                            height={boundsHeight}
-                        />
-                    </g>
-                    {shapes}
-                </g>
-            </svg>
-            <div
-                style={{
-                    width: boundsWidth,
-                    height: boundsHeight,
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    pointerEvents: "none",
-                    marginLeft: MARGIN.left,
-                    marginTop: MARGIN.top,
-                }}
-            >
-                <Tooltip interactionInfo={hovered} />
-            </div>
-        </div>
-    )
+	const lineBuilder = d3.line<{ x: number, y: number; }>()
+		.x((d) => xScale(d.x))
+		.y((d) => yScale(d.y));
+
+	const linePath = lineBuilder(data);
+	if (!linePath) {
+		return null;
+	}
+
+	return (
+		<div style={{ position: "relative" }}>
+			<svg width={dims.width} height={dims.height}>
+				<g
+					width={dims.boundedWidth}
+					height={dims.boundedHeight}
+					transform={`translate(${[dims.marginLeft, dims.marginTop].join(",")})`}
+				>
+					<path
+						d={linePath}
+						opacity={1}
+						stroke="#1e90ff"
+						fill="none"
+						strokeWidth={4}
+					/>
+					<AxisLeft yScale={yScale} pixelsPerTick={40} width={dims.boundedWidth ?? 0} />
+					<g transform={`translate(0, ${dims.boundedHeight})`}>
+						<AxisBottom
+							xScale={xScale}
+							pixelsPerTick={40}
+							height={dims.boundedHeight ?? 0}
+						/>
+					</g>
+					{shapes}
+				</g>
+			</svg>
+			<div
+				style={{
+					width: dims.boundedWidth,
+					height: dims.boundedHeight,
+					position: "absolute",
+					top: 0,
+					left: 0,
+					pointerEvents: "none",
+					marginLeft: dims.marginLeft,
+					marginTop: dims.marginTop,
+				}}
+			>
+				<Tooltip interactionInfo={hovered} />
+			</div>
+		</div>
+	);
 };
