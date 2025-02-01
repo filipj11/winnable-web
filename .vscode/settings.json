@@ -1,0 +1,12 @@
+{
+	"editor.codeActionsOnSave": [
+		"source.fixAll.eslint",
+		"source.organizeImports"
+	],
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": false,
+	"editor.formatOnSave": true,
+	"typescript.format.enable": true,
+	"typescript.format.semicolons": "insert",
+	"typescript.preferences.quoteStyle": "single",
+}
